@@ -1,4 +1,5 @@
 import numpy as np
+import json
 
 class Student:
     def __init__(self, name, roll_no, marks):
@@ -27,12 +28,11 @@ class SchoolSystem:
 
         marks = []
         for i in range(3):
-            m = int(input(f"Enter marks of subject {i+1}: "))
+            m = int(input(f"Enter marks of subject {i+1}: " ))
             marks.append(m)
 
         student = Student(name, roll, marks)
         self.students.append(student)
-
         print("Student added successfully!")
 
     def show_all(self):
@@ -44,11 +44,9 @@ class SchoolSystem:
             print("Name:", s.name)
             print("Roll:", s.roll_no)
             print("Marks:", s.marks)
-
             print("Average:", self.analyzer.average(s.marks))
             print("Highest:", self.analyzer.highest(s.marks))
             print("Lowest:", self.analyzer.lowest(s.marks))
-
             print("----------------------")
 
     def topper(self):
@@ -57,7 +55,6 @@ class SchoolSystem:
 
         for s in self.students:
             avg = self.analyzer.average(s.marks)
-
             if avg > highest_avg:
                 highest_avg = avg
                 top_student = s
@@ -66,10 +63,38 @@ class SchoolSystem:
             print("Topper:", top_student.name)
             print("Average Marks:", highest_avg)
 
+    def save_file(self):
+        data = []
+        for s in self.students:
+            data.append({
+                "name": s.name,
+                "roll_no": s.roll_no,
+                "marks": s.marks.tolist()
+            })
+        with open("Student.json", "w") as file:
+            json.dump(data, file)
+        print("Data saved successfully!")
+
+    def load_file(self):
+        try:
+            with open("Student.json", "r") as file:
+                data = json.load(file)
+                for i in data:
+                    student = Student(
+                        i["name"],
+                        i["roll_no"],
+                        i["marks"]
+                    )
+                    self.students.append(student)
+        except FileNotFoundError:
+            print("No saved student data found. Starting fresh.")
+
+# ----------------- MAIN PROGRAM -----------------
 system = SchoolSystem()
+system.load_file()
 
 while True:
-    print("1 Add Student")
+    print("\n1 Add Student")
     print("2 Show Students")
     print("3 Show Topper")
     print("4 Exit")
@@ -78,15 +103,13 @@ while True:
 
     if choice == 1:
         system.add_student()
-
     elif choice == 2:
         system.show_all()
-
     elif choice == 3:
         system.topper()
-
     elif choice == 4:
+        system.save_file()
         print("Exited bye!")
         break
     else:
-        print("No student found")
+        print("Invalid choice, try again!")
